@@ -11,6 +11,7 @@ Initializes an in-memory dictionary for storing Objects.
 import uuid
 import datetime
 from dateutil.parser import parse
+from ga4gh.drs.object import Model
 
 
 DEFAULT_PAGE_SIZE = 100
@@ -37,10 +38,12 @@ def get_most_recent(key):
     :return:
     """
     max = {'updated': '01-01-1965 00:00:00Z'}
-    if key not in objects:
+    stores_model = Model()
+    found = stores_model.getObject(key)
+    if not found:
         raise KeyError("object not found!")
-    for version in objects[key].keys():
-        object = objects[key][version]
+    for version in found[key].keys():
+        object = found[key][version]
         if parse(object['updated']) > parse(max['updated']):
             max = object
     return max
@@ -128,8 +131,17 @@ def create(body, key):
     else:
         temp_id = str(uuid.uuid4())
         doc['id'] = temp_id
+
     store[doc['id']] = {}
     store[doc['id']][doc['version']] = doc
+
+    mongo_obj = {}
+    mongo_obj['id'] = doc['id']
+    mongo_obj[f"{doc['id']}"] = {}
+    mongo_obj[f"{doc['id']}"][doc['version']] = doc
+
+    stores_model = Model()
+    stores_model.create(mongo_obj)
     return doc
 
 # Data Object Controllers
@@ -159,12 +171,16 @@ def GetObject(**kwargs):
     version = kwargs.get('version', None)
     # Implementation detail, this server uses integer version numbers.
     # Get the Data Object from our dictionary
-    object_key = objects.get(object_id, None)
+
+    # object_key = objects.get(object_id, None)
+
+    stores_model = Model()
+    object_key = stores_model.getObject(object_id)
     if object_key and not version:
         object = get_most_recent(object_id)
         return({"object": object}, 200)
     elif object_key and objects[object_id].get(version, None):
-        object = objects[object_id][version]
+        object = object_key[object_id][version]
         return ({"object": object}, 200)
     else:
         return({'msg': "The requested Data "
