@@ -70,8 +70,8 @@ def filter_objects(predicate):
     Filters data objects according to a function that acts on each item
     returning either True or False per item.
     """
-    store_model = Model()
-    mongo_objects = store_model.getAllObjects()
+    stores_model = Model()
+    mongo_objects = stores_model.getAllObjects()
     return [get_most_recent(x[0]) for x in filter(predicate, mongo_objects.items())]
 
 
