@@ -13,4 +13,12 @@ class Model:
       return self.objects.find_one({"id": object_id})
 
     def getAllObjects(self):
-        print(list(self.objects.find()))
+        objects = self.objects.find()
+        formatted = {}
+        for obj in objects:
+            id = obj['id']
+            formatted[f"{id}"] = obj[f"{id}"]
+        return formatted
+
+    def updateObject(self, object_id, new_values):
+        self.objects.update_one({"id": object_id}, { "$set": new_values})

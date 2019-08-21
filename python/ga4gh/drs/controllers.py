@@ -11,7 +11,7 @@ Initializes an in-memory dictionary for storing Objects.
 import uuid
 import datetime
 from dateutil.parser import parse
-from ga4gh.drs.object import Model
+from ga4gh.drs.model import Model
 
 
 DEFAULT_PAGE_SIZE = 100
@@ -70,7 +70,9 @@ def filter_objects(predicate):
     Filters data objects according to a function that acts on each item
     returning either True or False per item.
     """
-    return [get_most_recent(x[0]) for x in filter(predicate, objects.items())]
+    store_model = Model()
+    mongo_objects = store_model.getAllObjects()
+    return [get_most_recent(x[0]) for x in filter(predicate, mongo_objects.items())]
 
 
 def filter_bundles(predicate):
@@ -226,10 +228,15 @@ def UpdateObject(**kwargs):
     # collides we'll pad it. If they provided a good one, we will
     # accept it. If they don't provide one, we'll give one.
     new_version = doc.get('version', None)
-    if not new_version or new_version in objects[object_id].keys():
+    stores_model = Model()
+    mongo_obj = stores_model.getObject(object_id)
+    if not new_version or new_version in mongo_obj[object_id].keys():
         doc['version'] = now()
     doc['id'] = old_object['id']
-    objects[object_id][doc['version']] = doc
+    new_values = {}
+    new_values[object_id] = mongo_obj[object_id]
+    new_values[object_id][doc['version']] = doc
+    stores_model.updateObject(object_id, new_values)
     return({"object_id": object_id}, 200)
 
 
