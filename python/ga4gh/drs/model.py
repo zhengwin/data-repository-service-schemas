@@ -22,3 +22,6 @@ class Model:
 
     def updateObject(self, object_id, new_values):
         self.objects.update_one({"id": object_id}, { "$set": new_values})
+
+    def deleteObject(self, object_id):
+        self.objects.delete_one({"id": object_id})

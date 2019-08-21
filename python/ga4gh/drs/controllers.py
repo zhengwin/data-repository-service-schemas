@@ -248,7 +248,8 @@ def DeleteObject(**kwargs):
     :return:
     """
     object_id = kwargs['object_id']
-    del objects[object_id]
+    stores_model = Model()
+    stores_model.deleteObject(object_id)
     return({"object_id": object_id}, 200)
 
 
