@@ -133,7 +133,6 @@ def create(body, key):
     else:
         temp_id = str(uuid.uuid4())
         doc['id'] = temp_id
-
     store[doc['id']] = {}
     store[doc['id']][doc['version']] = doc
 
@@ -198,7 +197,10 @@ def GetObjectVersions(**kwargs):
     object_id = kwargs['object_id']
     # Implementation detail, this server uses integer version numbers.
     # Get the Data Object from our dictionary
-    object_versions_dict = objects.get(object_id, None)
+
+    stores_model = Model()
+    object_versions_dict = stores_model.getObject(object_id)[object_id]
+    # object_versions_dict = objects.get(object_id, None)
     object_versions = [x[1] for x in object_versions_dict.items()]
     if object_versions:
         return({"objects": object_versions}, 200)
